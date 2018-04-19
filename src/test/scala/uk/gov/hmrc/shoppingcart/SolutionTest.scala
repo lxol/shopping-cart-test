@@ -21,4 +21,42 @@ class SolutionTest extends WordSpec with Matchers {
   }
 
 
+  "Step2ShoppingService.checkout" should {
+    "return Some(0.6) when input is [Apple] " in {
+      val input = List("Apple")
+      Solution.Step2ShoppingService.checkout(input) should be(Some(BigDecimal("0.6")))
+    }
+    "return Some(0.6) for 2 Apples (buy 1 get 1 free offer)" in {
+      val input = List("Apple", "Apple")
+      Solution.Step2ShoppingService.checkout(input) should be(Some(BigDecimal("0.6")))
+    }
+    "return Some(1.8) for 5 Apples  (buy 1 get 1 free offer)" in {
+      val input = List.fill(5)("Apple")
+      Solution.Step2ShoppingService.checkout(input) should be(Some(BigDecimal("1.8")))
+    }
+    "return Some(0.25) for 1 Oranges " in {
+      val input = List.fill(1)("Orange")
+      Solution.Step2ShoppingService.checkout(input) should be(Some(BigDecimal("0.25")))
+    }
+    "return Some(0.50) for 3 Oranges " in {
+      val input = List.fill(3)("Orange")
+      Solution.Step2ShoppingService.checkout(input) should be(Some(BigDecimal("0.50")))
+    }
+    "return Some(1.25) for 7 Oranges " in {
+      val input = List.fill(7)("Orange")
+      Solution.Step2ShoppingService.checkout(input) should be(Some(BigDecimal("1.25")))
+    }
+    "return Some(3.05) for 7 Oranges and 5 Apples " in {
+      val input = List.fill(7)("Orange") ++ List.fill(5)("Apple")
+      Solution.Step2ShoppingService.checkout(input) should be(Some(BigDecimal("3.05")))
+    }
+    "return Some(0) if input is empty" in {
+      val input = List()
+      Solution.Step2ShoppingService.checkout(input) should be(Some(0))
+    }
+    "return None when input contains invalid string " in {
+      val input = List("Apple", "INVALID", "Orange", "Apple")
+      Solution.Step1ShoppingService.checkout(input) should be(None)
+    }
+  }
 }
