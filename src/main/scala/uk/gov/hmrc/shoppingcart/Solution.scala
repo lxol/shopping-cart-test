@@ -14,30 +14,38 @@ object Solution {
     def name: String
 
     def cost: Amount
-
-    def quantityOffer: QuantityOffer
   }
 
-  final case class AppleItem(name: String, cost: Amount, quantityOffer: QuantityOffer) extends ShoppingItem
+  final case class AppleItem(name: String, cost: Amount) extends ShoppingItem
 
-  final case class OrangeItem(name: String, cost: Amount, quantityOffer: QuantityOffer) extends ShoppingItem
+  final case class OrangeItem(name: String, cost: Amount) extends ShoppingItem
 
   object ShoppingItem {
     def itemFromString(str: String): Option[ShoppingItem] =
       str match {
-        case "Apple" => Some(AppleItem("Apple", APPLECOST, BuyOneGetOneFree))
-        case "Orange" => Some(OrangeItem("Orange", ORANGECOST, ThreeForThePriceOfTwo))
+        case "Apple" => Some(AppleItem("Apple", APPLECOST))
+        case "Orange" => Some(OrangeItem("Orange", ORANGECOST))
+        case _ => None
+      }
+
+    def getQuantityOffer(shoppingItem: ShoppingItem) =
+      shoppingItem match {
+        case _: AppleItem => Some(BuyOneGetOneFree)
+        case _: OrangeItem => Some(ThreeForThePriceOfTwo)
         case _ => None
       }
   }
 
   trait ShoppingService {
+    def getShoppingItems(items: List[String]): Option[List[ShoppingItem]] =
+      Traverse[List].traverse(items)(ShoppingItem.itemFromString)
+
     def checkout(items: List[String]): Option[Amount]
   }
 
   object Step1ShoppingService extends ShoppingService {
     override def checkout(items: List[String]): Option[Amount] =
-      Traverse[List].traverse(items)(ShoppingItem.itemFromString).map(_.map(_.cost).sum)
+      getShoppingItems(items).map(_.map(_.cost).sum)
   }
 
   // Step  2
@@ -46,12 +54,6 @@ object Solution {
     val buy: Int
 
     val priceOf: Int
-  }
-
-  final case object NoOffer extends QuantityOffer {
-    override val buy: Int = 1
-
-    override val priceOf: Int = 1
   }
 
   final case object BuyOneGetOneFree extends QuantityOffer {
@@ -67,24 +69,27 @@ object Solution {
   }
 
   trait QuantityOfferCalculation {
-    def quantityOffer(shoppingItems: List[ShoppingItem]): List[ShoppingItem]
+    def quantityOffer(shoppingItems: List[ShoppingItem]): List[ShoppingItem] =
+      shoppingItems.groupBy(identity).flatMap { kv => {
+        val shoppingItem = kv._1
+        val shoppingItems = kv._2
+        ShoppingItem.getQuantityOffer(shoppingItem).map {
+          qOffer => {
+            val quotient = shoppingItems.size / qOffer.buy
+            val remainder = shoppingItems.size % qOffer.buy
+            List.fill(quotient * qOffer.priceOf + remainder)(shoppingItem)
+          }
+        }.getOrElse(shoppingItems)
+      }
+      }.toList
   }
 
   object Step2ShoppingService extends ShoppingService with QuantityOfferCalculation {
     override def checkout(items: List[String]): Option[Amount] =
       for {
-        itemObjects <- Traverse[List].traverse(items)(ShoppingItem.itemFromString)
+        itemObjects <- getShoppingItems(items)
       } yield
         quantityOffer(itemObjects).map(_.cost).sum
-
-
-    override def quantityOffer(items: List[ShoppingItem]): List[ShoppingItem] =
-      items.groupBy(identity).flatMap(kv => {
-        val quotient = kv._2.size / kv._1.quantityOffer.buy
-        val remainder = kv._2.size % kv._1.quantityOffer.buy
-        List.fill(quotient * kv._1.quantityOffer.priceOf + remainder)(kv._1)
-      }).toList
-
   }
 
 }
