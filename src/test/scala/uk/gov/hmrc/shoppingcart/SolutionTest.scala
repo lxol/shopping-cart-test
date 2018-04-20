@@ -58,5 +58,37 @@ class SolutionTest extends WordSpec with Matchers {
       val input = List("Apple", "INVALID", "Orange", "Apple")
       Solution.Step1ShoppingService.checkout(input) should be(None)
     }
+    "return  Some(0.20) when input is [Banana] " in {
+      val input = List("Banana")
+      Solution.Step2ShoppingService.checkout(input) should be(Some(BigDecimal("0.2")))
+    }
+    "return  Some(0.20) when input is [Banana, Banana] " in {
+      val input = List.fill(2)("Banana")
+      Solution.Step2ShoppingService.checkout(input) should be(Some(BigDecimal("0.2")))
+    }
+    "return  Some(0.20) when input 3 Banana " in {
+      val input = List.fill(3)("Banana")
+      Solution.Step2ShoppingService.checkout(input) should be(Some(BigDecimal("0.4")))
+    }
+  }
+
+  "Step3ShoppingService.checkout" should {
+    "return Some(1.2) when input is [Apple, Apple, Banana] " in {
+      val input = List("Apple", "Apple", "Banana")
+      Solution.Step3ShoppingService.checkout(input) should be(Some(BigDecimal("1.2")))
+    }
+    "return Some(1.2) when input is [Apple, Apple, Banana, Banana] " in {
+      val input = List("Apple", "Apple", "Banana", "Banana")
+      Solution.Step3ShoppingService.checkout(input) should be(Some(BigDecimal("1.2")))
+    }
+    "return Some(0.8) when input is [Apple, Banana, Banana] " in {
+      val input = List("Apple",  "Banana", "Banana")
+      Solution.Step3ShoppingService.checkout(input) should be(Some(BigDecimal("0.8")))
+    }
+
+    "return Some(1.2) when input is [Apple, Apple, Apple,   Banana] " in {
+      val input = List("Apple", "Apple",  "Apple", "Banana")
+      Solution.Step3ShoppingService.checkout(input) should be(Some(BigDecimal("1.2")))
+    }
   }
 }
